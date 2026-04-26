@@ -21,7 +21,7 @@ dotnet run --project src/TimeZoneCoverage.Api/TimeZoneCoverage.Api.csproj
 dotnet test
 
 # Run a single test by name filter
-dotnet test --filter "TestMethodName"
+dotnet test --filter "FullyQualifiedName~TestMethodName"
 
 # Run tests with verbose output
 dotnet test --verbosity detailed
@@ -40,13 +40,13 @@ Layered architecture: **Controller → Service → Models**, with all services p
 - `Services/CoverageActivationService.cs` — Core business logic. Contains `ConvertStartDateToActivationUtc_Buggy`, an intentionally incorrect method that treats a selected date as UTC midnight instead of midnight in the activation timezone.
 - `Services/TimeZoneResolver.cs` — Resolves IANA/Windows timezone ID strings to `TimeZoneInfo`.
 - `Services/SystemClock.cs` / `IClock.cs` — Injectable time provider. `IClock` is registered in DI but not yet injected into `CoverageActivationService`; it exists as a testability hook for future use.
-- `tests/CoverageActivationServiceTests.cs` — xUnit tests that document the correct behavior. Tests construct `CoverageActivationService` directly with a real `TimeZoneResolver` — no mocks needed.
+- `tests/TimeZoneCoverage.Api.Tests/CoverageActivationServiceTests.cs` — xUnit tests that document the correct behavior. Tests construct `CoverageActivationService` directly with a real `TimeZoneResolver` — no mocks needed.
 
-## The Known Bug
+## Historical bug note
 
-`CoverageActivationService.ConvertStartDateToActivationUtc_Buggy` incorrectly treats the activation date as UTC midnight. The correct behavior is to construct midnight in the activation timezone and then convert to UTC, respecting DST offsets.
+Earlier versions of the scheduling logic treated the selected activation date as UTC midnight, which produced incorrect activation timestamps for the requested timezone. The correct behavior is to construct midnight in the activation timezone and then convert that local time to UTC, respecting DST offsets.
 
-The fix: create a `DateTime` with `DateTimeKind.Unspecified` representing local midnight, then call `TimeZoneInfo.ConvertTimeToUtc(localMidnight, activationTimeZone)`. This handles DST automatically.
+This is now handled by creating a `DateTime` with `DateTimeKind.Unspecified` for local midnight and passing it to `TimeZoneInfo.ConvertTimeToUtc(localMidnight, activationTimeZone)`, which applies the correct timezone and DST rules automatically.
 
 Expected results from the tests:
 
