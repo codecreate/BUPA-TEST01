@@ -8,8 +8,11 @@ public sealed class CoverageActivationServiceTests
 {
     private readonly ICoverageActivationService _service = new CoverageActivationService(new TimeZoneResolver());
 
+    // RENAMED: was ScheduleActivation_CurrentImplementation_IsWrongForSydneyMidnight.
+    // The original name described broken behaviour; after the fix this test verifies correct behaviour,
+    // so the name has been updated to reflect what it actually asserts.
     [Fact]
-    public void ScheduleActivation_CurrentImplementation_IsWrongForSydneyMidnight()
+    public void ScheduleActivation_SydneyStandardTime_ConvertsToCorrectUtc()
     {
         var request = new CoverageScheduleRequest
         {
@@ -21,8 +24,6 @@ public sealed class CoverageActivationServiceTests
 
         var response = _service.ScheduleActivation(request);
 
-        // This test describes the expected business behavior, not the current broken behavior.
-        // A fixed implementation should activate at local midnight in Sydney.
         // On 2026-05-01, Sydney is UTC+10, so local midnight is 2026-04-30T14:00:00Z.
         Assert.Equal(new DateTime(2026, 4, 30, 14, 0, 0, DateTimeKind.Utc), response.ActivationUtc);
     }
