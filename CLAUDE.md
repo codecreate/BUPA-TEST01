@@ -37,18 +37,18 @@ Layered architecture: **Controller → Service → Models**, with all services p
 
 - `Program.cs` — DI registration and middleware pipeline. Registers `TimeZoneResolver`, `CoverageActivationService`, `SystemClock`. Swagger enabled only in Development. Also exposes `GET /health`.
 - `Controllers/CoverageController.cs` — Two endpoints: `POST /api/coverage/schedule` and `POST /api/coverage/status`.
-- `Services/CoverageActivationService.cs` — Core business logic. Contains `ConvertStartDateToActivationUtc_Buggy`, an intentionally incorrect method that treats a selected date as UTC midnight instead of midnight in the activation timezone.
+- `Services/CoverageActivationService.cs` — Core business logic. Contains `ConvertStartDateToActivationUtc`, which converts a customer's selected date to midnight UTC in the activation timezone, respecting DST.
 - `Services/TimeZoneResolver.cs` — Resolves IANA/Windows timezone ID strings to `TimeZoneInfo`.
 - `Services/SystemClock.cs` / `IClock.cs` — Injectable time provider. `IClock` is registered in DI but not yet injected into `CoverageActivationService`; it exists as a testability hook for future use.
 - `tests/TimeZoneCoverage.Api.Tests/CoverageActivationServiceTests.cs` — xUnit tests that document the correct behavior. Tests construct `CoverageActivationService` directly with a real `TimeZoneResolver` — no mocks needed.
 
-## Historical bug note
+## The Bug and What Changed
 
-Earlier versions of the scheduling logic treated the selected activation date as UTC midnight, which produced incorrect activation timestamps for the requested timezone. The correct behavior is to construct midnight in the activation timezone and then convert that local time to UTC, respecting DST offsets.
+The original starter method `ConvertStartDateToActivationUtc_Buggy` (in `Services/CoverageActivationService.cs`) called `DateTime.SpecifyKind(midnight, DateTimeKind.Utc)`, which incorrectly treated the customer's selected date as already being midnight UTC. This produced the wrong activation time for any timezone that differs from UTC, and ignored DST entirely.
 
-This is now handled by creating a `DateTime` with `DateTimeKind.Unspecified` for local midnight and passing it to `TimeZoneInfo.ConvertTimeToUtc(localMidnight, activationTimeZone)`, which applies the correct timezone and DST rules automatically.
+It has been replaced by `ConvertStartDateToActivationUtc`, which constructs a `DateTime` with `DateTimeKind.Unspecified` (meaning "midnight as the clock reads in the activation timezone") and converts it with `TimeZoneInfo.ConvertTimeToUtc(localMidnight, activationTimeZone)`. This handles DST automatically.
 
-Expected results from the tests:
+Expected results verified by the tests:
 
 - May 1 midnight in Sydney (UTC+10, standard time) = `2026-04-30T14:00:00Z`
 - Jan 15 midnight in Sydney (UTC+11, DST) = `2026-01-14T13:00:00Z`
