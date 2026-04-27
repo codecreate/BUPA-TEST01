@@ -19,6 +19,8 @@ public sealed class CoverageActivationService : ICoverageActivationService
         var activationUtc = ConvertStartDateToActivationUtc(request.SelectedStartDate, activationTimeZone);
 
         var activationLocal = TimeZoneInfo.ConvertTimeFromUtc(activationUtc, activationTimeZone);
+        // DateTimeOffset is a DateTime plus an explicit offset. By constructing one with the activation timezone's
+        // correct offset attached, zzz now has the right answer to give. It's baked in, not guessed from the server environment.
         var activationLocalDto = new DateTimeOffset(activationLocal, activationTimeZone.GetUtcOffset(activationUtc));
 
         return new CoverageScheduleResponse
