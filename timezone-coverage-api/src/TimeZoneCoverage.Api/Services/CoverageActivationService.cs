@@ -49,7 +49,7 @@ public sealed class CoverageActivationService : ICoverageActivationService
     // which incorrectly treated the customer's selected date as already being midnight UTC. That produced the wrong
     // activation time for any customer whose activation timezone differs from UTC, and ignored DST entirely.
     //
-    // This implementation constructs midnight with DateTimeKind. Unspecified — meaning "midnight as the clock reads in that timezone"
+    // This implementation constructs midnight with DateTimeKind.Unspecified — meaning "midnight as the clock reads in that timezone"
     // — and passes it to TimeZoneInfo.ConvertTimeToUtc, which applies the correct UTC offset including any DST adjustment.
     // Example: 2026-05-01 midnight in Australia/Sydney (UTC+10) correctly becomes 2026-04-30T14:00:00Z.
     private static DateTime ConvertStartDateToActivationUtc(DateOnly selectedStartDate, TimeZoneInfo activationTimeZone)
