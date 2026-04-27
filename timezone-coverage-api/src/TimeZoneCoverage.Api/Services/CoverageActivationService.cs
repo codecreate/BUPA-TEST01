@@ -37,7 +37,6 @@ public sealed class CoverageActivationService : ICoverageActivationService
 
     public CoverageStatusResponse GetCoverageStatus(CoverageStatusRequest request)
     {
-        Console.WriteLine($"Checking coverage status: CurrentUtc={request.CurrentUtc:O}, ActivationUtc={request.ActivationUtc:O}");
         var isActive = request.CurrentUtc >= request.ActivationUtc;
 
         return new CoverageStatusResponse
