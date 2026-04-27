@@ -15,6 +15,7 @@ public sealed class CoverageActivationService : ICoverageActivationService
     {
         var activationTimeZone = _timeZoneResolver.Resolve(request.ActivationTimeZoneId);
 
+        // changed the name of the function being called here. It was previously named ConvertStartDateToActivationUtc_Buggy
         var activationUtc = ConvertStartDateToActivationUtc(request.SelectedStartDate, activationTimeZone);
 
         var activationLocal = TimeZoneInfo.ConvertTimeFromUtc(activationUtc, activationTimeZone);
