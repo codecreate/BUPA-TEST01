@@ -8,9 +8,6 @@ public sealed class CoverageActivationServiceTests
 {
     private readonly ICoverageActivationService _service = new CoverageActivationService(new TimeZoneResolver());
 
-    // RENAMED: was ScheduleActivation_CurrentImplementation_IsWrongForSydneyMidnight.
-    // The original name described broken behaviour; after the fix this test verifies correct behaviour,
-    // so the name has been updated to reflect what it actually asserts.
     [Fact]
     public void ScheduleActivation_SydneyStandardTime_ConvertsToCorrectUtc()
     {
