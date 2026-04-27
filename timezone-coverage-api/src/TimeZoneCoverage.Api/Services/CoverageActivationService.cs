@@ -19,6 +19,7 @@ public sealed class CoverageActivationService : ICoverageActivationService
         var activationUtc = ConvertStartDateToActivationUtc(request.SelectedStartDate, activationTimeZone);
 
         var activationLocal = TimeZoneInfo.ConvertTimeFromUtc(activationUtc, activationTimeZone);
+        var activationLocalDto = new DateTimeOffset(activationLocal, activationTimeZone.GetUtcOffset(activationUtc));
 
         return new CoverageScheduleResponse
         {
@@ -27,13 +28,14 @@ public sealed class CoverageActivationService : ICoverageActivationService
             PurchaseTimeZoneId = request.PurchaseTimeZoneId,
             ActivationTimeZoneId = request.ActivationTimeZoneId,
             ActivationUtc = activationUtc,
-            ActivationLocalTime = activationLocal.ToString("yyyy-MM-dd HH:mm:ss zzz"),
+            ActivationLocalTime = activationLocalDto.ToString("yyyy-MM-dd HH:mm:ss zzz"),
             Notes = string.Empty
         };
     }
 
     public CoverageStatusResponse GetCoverageStatus(CoverageStatusRequest request)
     {
+        Console.WriteLine($"Checking coverage status: CurrentUtc={request.CurrentUtc:O}, ActivationUtc={request.ActivationUtc:O}");
         var isActive = request.CurrentUtc >= request.ActivationUtc;
 
         return new CoverageStatusResponse
@@ -54,7 +56,7 @@ public sealed class CoverageActivationService : ICoverageActivationService
     // Example: 2026-05-01 midnight in Australia/Sydney (UTC+10) correctly becomes 2026-04-30T14:00:00Z.
     private static DateTime ConvertStartDateToActivationUtc(DateOnly selectedStartDate, TimeZoneInfo activationTimeZone)
     {
-        var localMidnight = selectedStartDate.ToDateTime(TimeOnly.MinValue); // DateTimeKind.Unspecified = "local to the given tz"
+        var localMidnight = selectedStartDate.ToDateTime(TimeOnly.MinValue); // Kind == Unspecified: no tz context; ConvertTimeToUtc interprets it as being in activationTimeZone
         return TimeZoneInfo.ConvertTimeToUtc(localMidnight, activationTimeZone);
     }
 }
