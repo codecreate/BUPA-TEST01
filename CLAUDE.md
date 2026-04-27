@@ -38,7 +38,7 @@ Layered architecture: **Controller → Service → Models**, with all services p
 - `Program.cs` — DI registration and middleware pipeline. Registers `TimeZoneResolver`, `CoverageActivationService`, `SystemClock`. Swagger enabled only in Development. Also exposes `GET /health`.
 - `Controllers/CoverageController.cs` — Two endpoints: `POST /api/coverage/schedule` and `POST /api/coverage/status`.
 - `Services/CoverageActivationService.cs` — Core business logic. Contains `ConvertStartDateToActivationUtc`, which converts a customer's selected date to midnight UTC in the activation timezone, respecting DST.
-- `Services/TimeZoneResolver.cs` — Resolves IANA/Windows timezone ID strings to `TimeZoneInfo`.
+- `Services/TimeZoneResolver.cs` — Wraps `TimeZoneInfo.FindSystemTimeZoneById`. Accepts whatever ID format the host OS supports: IANA IDs (e.g. `Australia/Sydney`) on Linux/macOS, Windows IDs (e.g. `AUS Eastern Standard Time`) on Windows. No cross-format translation is performed.
 - `Services/SystemClock.cs` / `IClock.cs` — Injectable time provider. `IClock` is registered in DI but not yet injected into `CoverageActivationService`; it exists as a testability hook for future use.
 - `tests/TimeZoneCoverage.Api.Tests/CoverageActivationServiceTests.cs` — xUnit tests that document the correct behavior. Tests construct `CoverageActivationService` directly with a real `TimeZoneResolver` — no mocks needed.
 
