@@ -21,7 +21,7 @@ public sealed class CoverageActivationService : ICoverageActivationService
         var activationLocal = TimeZoneInfo.ConvertTimeFromUtc(activationUtc, activationTimeZone);
         // DateTimeOffset is a DateTime plus an explicit offset. By constructing one with the activation timezone's
         // correct offset attached, zzz now has the right answer to give. It's baked in, not guessed from the server environment.
-        var activationLocalDto = new DateTimeOffset(activationLocal, activationTimeZone.GetUtcOffset(activationUtc));
+        var activationLocalOffset = new DateTimeOffset(activationLocal, activationTimeZone.GetUtcOffset(activationUtc));
 
         return new CoverageScheduleResponse
         {
@@ -30,7 +30,7 @@ public sealed class CoverageActivationService : ICoverageActivationService
             PurchaseTimeZoneId = request.PurchaseTimeZoneId,
             ActivationTimeZoneId = request.ActivationTimeZoneId,
             ActivationUtc = activationUtc,
-            ActivationLocalTime = activationLocalDto.ToString("yyyy-MM-dd HH:mm:ss zzz"),
+            ActivationLocalTime = activationLocalOffset.ToString("yyyy-MM-dd HH:mm:ss zzz"),
             Notes = string.Empty
         };
     }
